@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Performance Analysis - Kihani PS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* --- DYNAMIC VISUAL THEME SYSTEM VARIABLES --- */
+        {% if config and config.theme == 'orange' %}
+        :root {
+            --bg-color: #FFF2E6;
+            --card-bg: #FFF9F2;
+            --border-color: #E6C29E;
+            --primary-accent: #FF9F43;
+            --dark-header: #1B365D;
+            --hover-accent: #E68A2E;
+        }
+        {% else %}
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+            --primary-accent: #3498db;
+            --dark-header: #1B365D;
+            --hover-accent: #2980b9;
+        }
+        {% endif %}
+
+        /* --- Standard Screen Styling --- */
+        body { font-family: Arial, sans-serif; background: var(--bg-color); padding: 0; margin: 0; }
+        .main-container { padding: 30px 20px; }
+        .container { max-width: 1000px; margin: auto; background: var(--card-bg); padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
+        .filter-form { display: flex; gap: 10px; margin-bottom: 20px; background: var(--bg-color); padding: 15px; border-radius: 8px; flex-wrap: wrap; border: 1px solid var(--border-color); align-items: flex-end; }
+        .filter-group { flex: 1; min-width: 140px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; color: var(--dark-header); }
+        select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--border-color); font-size: 15px; background: white; font-weight: bold; color: var(--dark-header); }
+        .btn-filter { background: var(--primary-accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; height: 43px; font-weight: bold; }
+        .btn-filter:hover { background: var(--hover-accent); }
+        
+        .btn-print { 
+            background: #27ae60; color: white; border: none; padding: 10px 20px; 
+            border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; 
+            margin-bottom: 15px; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-print:hover { background: #219653; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
+        th { background: var(--dark-header); color: white; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; display: inline-block; }
+        .badge-d { background: #27ae60; } 
+        .badge-c { background: #2980b9; } 
+        .badge-p { background: #f39c12; } 
+        .badge-f { background: #c0392b; } 
+
+        /* --- PERFORMANCE HIGHLIGHT CARDS & MARK STYLES --- */
+        .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .analytics-card { background: #ffffff; border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .analytics-card h4 { margin: 0 0 12px 0; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .analytics-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
+        
+        @media (max-width: 600px) { table { font-size: 12px; } th, td { padding: 6px; } }
+
+        /* ==================== SIDEBAR & TOP BAR STYLES ==================== */
+        .menu-toggle-btn {
+            font-size: 15px;
+            background-color: #FF9F43;
+            color: #1B365D;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: opacity 0.2s;
+        }
+
+        .menu-toggle-btn:hover { opacity: 0.9; }
+
+        .sidebar {
+            height: 100%; width: 270px; position: fixed; top: 0; left: -270px;
+            background-color: #1B365D; overflow-y: auto; transition: left 0.3s ease;
+            padding-top: 20px; z-index: 10000; box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4); text-align: left;
+        }
+
+        .sidebar.active { left: 0; }
+
+        .sidebar-title {
+            color: #87CEEB; padding: 0 20px; font-size: 18px; margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;
+        }
+
+        .sidebar a {
+            padding: 12px 20px; text-decoration: none; font-size: 14px;
+            color: #ffffff; display: block; transition: background 0.2s;
+        }
+
+        .sidebar a:hover { background-color: #87CEEB; color: #1B365D; font-weight: bold; }
+
+        .sidebar .close-btn {
+            position: absolute; top: 10px; right: 15px; font-size: 28px; color: #87CEEB; cursor: pointer; padding: 0;
+        }
+
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5); z-index: 9999;
+        }
+
+        .sidebar-overlay.active { display: block; }
+
+        /* --- PRINT STYLING --- */
+        @media print {
+            body { background: white; color: black; padding: 0; margin: 0; }
+            .main-container { padding: 0 !important; display: block !important; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; margin: 0; border: none; }
+            #sidebar, #sidebar-overlay, .top-header-bar, .filter-form, .btn-print, .analytics-grid, p, footer, body > h2 { display: none !important; }
+            table { width: 100%; border: 1px solid black; font-size: 11px; page-break-inside: auto; margin-bottom: 15px; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            th, td { border: 1px solid black !important; padding: 5px !important; color: black !important; }
+            th { background: #f2f2f2 !important; color: black !important; }
+            .badge { color: black !important; background: transparent !important; padding: 0; font-weight: bold; }
+            .print-header { display: block !important; text-align: center; margin-bottom: 15px; }
+            .summary-section { page-break-inside: avoid; margin-top: 15px; }
+        }
+        
+        .print-header { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <!-- 2. Dark Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 3. Top Header Bar -->
+    <div class="top-header-bar" style="background-color: #1B365D; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">&#9776; Menu</button>
+            <img src="{{ url_for('static', filename='photos/badge.jpg') }}" style="height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="container">
+            <div class="print-header">
+                <h2 style="margin: 0; font-size: 22px;">KIHANI PRIMARY SCHOOL</h2>
+                <h3 style="margin: 5px 0 20px 0; font-size: 16px; text-transform: uppercase;">
+                    Official Class Mark List — {{ selected_class }} ({{ selected_exam }}) | {{ selected_term }} {{ selected_year }}
+                </h3>
+            </div>
+
+            <h2 style="text-align:center; color: var(--dark-header); margin-top: 0;">Class Performance Dashboard</h2>
+            <p style="text-align:center;"><a href="{{ url_for('home') }}" style="color: var(--primary-accent); text-decoration:none; font-weight: bold;">← Back Dashboard</a></p>
+
+            <form method="GET" action="{{ url_for('performance') }}" class="filter-form" id="filterForm">
+    <div class="filter-group">
+        <label for="class_name">Select Class:</label>
+        <select name="class_name" id="class_name" onchange="document.getElementById('filterForm').submit()">
+            {% for c in classes %}
+            <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="filter-group">
+        <label for="exam_type">Select Exam Set:</label>
+        <select name="exam_type" id="exam_type" onchange="document.getElementById('filterForm').submit()">
+            <option value="BOT" {% if selected_exam == 'BOT' %}selected{% endif %}>Beginning of Term (BOT)</option>
+            <option value="MOT" {% if selected_exam in ['MTC', 'MOT', 'MID'] %}selected{% endif %}>Mid-Term Exams (MOT)</option>
+            <option value="EOT" {% if selected_exam == 'EOT' %}selected{% endif %}>End of Term (EOT)</option>
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="term">Select Term:</label>
+        <select name="term" id="term" onchange="document.getElementById('filterForm').submit()">
+            <option value="Term 1" {% if selected_term == 'Term 1' %}selected{% endif %}>Term 1</option>
+            <option value="Term 2" {% if selected_term == 'Term 2' %}selected{% endif %}>Term 2</option>
+            <option value="Term 3" {% if selected_term == 'Term 3' %}selected{% endif %}>Term 3</option>
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="year">Select Year:</label>
+        <select name="year" id="year" onchange="document.getElementById('filterForm').submit()">
+            {% for y in range(2024, 2031) %}
+            <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <button type="submit" class="btn-filter">Analyze</button>
+</form>
+            <!-- TOP & BOTTOM PERFORMANCE CARDS SECTION -->
+            <div class="analytics-grid">
+                <!-- Top 2 Learners -->
+                <div class="analytics-card" style="border-top: 4px solid #27ae60;">
+                    <h4 style="color: #1B365D;">🏆 Top 2 Learners</h4>
+                    {% for l in top_2_learners %}
+                    <div class="analytics-item">
+                        <span>#{{ loop.index }} {{ l.name }}</span>
+                        <span style="color: #27ae60;">{{ l.total_marks }} pts (Agg: {{ l.total_aggregates }})</span>
+                    </div>
+                    {% else %}
+                    <span style="font-size: 12px; color: #7f8c8d;">No data available</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Bottom Learners -->
+                <div class="analytics-card" style="border-top: 4px solid #c0392b;">
+                    <h4 style="color: #c0392b;">⚠️ Bottom Learners</h4>
+                    {% for l in bottom_2_learners %}
+                    <div class="analytics-item">
+                        <span>{{ l.name }}</span>
+                        <span style="color: #c0392b;">{{ l.total_marks }} pts (Agg: {{ l.total_aggregates }})</span>
+                    </div>
+                    {% else %}
+                    <span style="font-size: 12px; color: #7f8c8d;">No data available</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Top Subject Teachers -->
+                <div class="analytics-card" style="border-top: 4px solid #2980b9;">
+                    <h4 style="color: #1B365D;">🎖️ Top Subject Teachers</h4>
+                    {% for t in top_2_teachers %}
+                    <div class="analytics-item">
+                        <span>{{ t.subject }} <small style="font-weight: normal; color: #7f8c8d;">({{ t.teacher }})</small></span>
+                        <span style="color: #2980b9;">{{ t.avg_mark }}%</span>
+                    </div>
+                    {% else %}
+                    <span style="font-size: 12px; color: #7f8c8d;">No data available</span>
+                    {% endfor %}
+                </div>
+
+                <!-- Lowest Performing Subject Teachers -->
+                <div class="analytics-card" style="border-top: 4px solid #e74c3c;">
+                    <h4 style="color: #c0392b;">📉 Lowest Subject Teachers</h4>
+                    {% for t in bottom_2_teachers %}
+                    <div class="analytics-item">
+                        <span>{{ t.subject }} <small style="font-weight: normal; color: #7f8c8d;">({{ t.teacher }})</small></span>
+                        <span style="color: #e74c3c;">{{ t.avg_mark }}%</span>
+                    </div>
+                    {% else %}
+                    <span style="font-size: 12px; color: #7f8c8d;">No data available</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <h3 style="background: var(--dark-header); color: white; padding: 10px; border-radius: 5px; margin-bottom: 5px;">
+                Summary Analysis Overview — {{ selected_term }} {{ selected_year }}
+            </h3>
+            <div style="overflow-x: auto; margin-bottom: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Total Sat</th>
+                            <th>Class Avg</th>
+                            <th>Highest</th>
+                            <th>Lowest</th>
+                            <th>D1</th>
+                            <th>D2</th>
+                            <th>C3</th>
+                            <th>C4</th>
+                            <th>C5</th>
+                            <th>C6</th>
+                            <th>P7</th>
+                            <th>P8</th>
+                            <th>F9</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in analysis %}
+                        <tr>
+                            <td style="text-align:left; font-weight:bold; color: var(--dark-header);">{{ sub.subject }}</td>
+                            <td>{{ sub.total_sat }}</td>
+                            <td style="background: #fcf8e3; font-weight: bold;">{{ sub.avg_mark }}{% if sub.avg_mark != '-' %}%{% endif %}</td>
+                            <td style="color: #27ae60; font-weight: bold;">{{ sub.highest }}</td>
+                            <td style="color: #c0392b; font-weight: bold;">{{ sub.lowest }}</td>
+                            <td><span class="badge badge-d">{{ sub.d1 }}</span></td>
+                            <td><span class="badge badge-d">{{ sub.d2 }}</span></td>
+                            <td><span class="badge badge-c">{{ sub.c3 }}</span></td>
+                            <td><span class="badge badge-c">{{ sub.c4 }}</span></td>
+                            <td><span class="badge badge-c">{{ sub.c5 }}</span></td>
+                            <td><span class="badge badge-c">{{ sub.c6 }}</span></td>
+                            <td><span class="badge badge-p">{{ sub.p7 }}</span></td>
+                            <td><span class="badge badge-p">{{ sub.p8 }}</span></td>
+                            <td><span class="badge badge-f">{{ sub.f9 }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <button onclick="window.print()" class="btn-print">
+                    🖨️ Print This Mark List
+                </button>
+
+                <h3 style="background: #27ae60; color: white; padding: 12px; border-radius: 5px; margin-bottom: 5px; margin-top: 0;">
+                    Official Mark List Roster — {{ selected_class }} ({{ selected_exam }}) | {{ selected_term }} {{ selected_year }}
+                </h3>
+                
+                <!-- MAIN MARKS LIST -->
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="background: var(--dark-header);">Pos</th>
+                                <th style="background: var(--dark-header); text-align: left;">Name</th>
+                                <th>Adm No</th>
+                                {% for sub in subjects %}
+                                <th>{{ sub }}</th>
+                                {% endfor %}
+                                <th style="background: var(--dark-header);">Total</th>
+                                <th style="background: var(--dark-header);">Agg</th>
+                                <th style="background: var(--dark-header);">Division</th>
+                                <th style="background: var(--dark-header); text-align: left;">Teacher Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in student_mark_list %}
+                            <tr {% if student.position == '1 of ' + (student_mark_list|length|string) or student.position == '1' %}style="background: #fff9e6;"{% endif %}>
+                                <td style="font-weight: bold; color: var(--dark-header);">{{ student.position }}</td>
+                                <td style="text-align: left; font-weight: bold;">{{ student.name }}</td>
+                                <td style="color: #7f8c8d;">{{ student.admission_no }}</td>
+                                
+                                {% for sub in subjects %}
+                                <td>
+                                    {% if sub == "Social Studies" %}
+                                        {{ student.marks.get('Social Studies', student.marks.get('Social Studies (SST)', '-')) }}
+                                    {% elif sub == "Social Studies (SST)" %}
+                                        {{ student.marks.get('Social Studies (SST)', student.marks.get('Social Studies', '-')) }}
+                                    {% else %}
+                                        {{ student.marks.get(sub, '-') }}
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                                
+                                <td style="font-weight: bold; background: #fcf8e3;">{{ student.total_marks }}</td>
+                                <td style="font-weight: bold; color: #2980b9;">{{ student.total_aggregates }}</td>
+                                <td>
+                                    <span class="badge {% if student.division in ['Div 1', 'DIV 1', 'I'] %}badge-d{% elif student.division in ['Div 2', 'DIV 2', 'II'] %}badge-c{% elif student.division in ['Div U', 'DIV U', 'U'] %}badge-f{% else %}badge-p{% endif %}">
+                                        {{ student.division }}
+                                    </span>
+                                </td>
+                                <td style="text-align: left; font-style: italic; color: #555;">{{ student.remarks }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="{{ 6 + (subjects|length) }}" style="padding: 20px; color: #7f8c8d;">
+                                    No marks uploaded for this specific selection layout yet.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SUMMARY TABLES SECTION -->
+                <div class="summary-section" style="margin-top: 25px;">
+                    
+                    <!-- TABLE 1: First Grade Contributions -->
+                    <h4 style="margin: 15px 0 5px 0; color: var(--dark-header);">First grade contributions of each subject . C3 - D1 (Number of learners)</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                {% for sub in subjects %}
+                                <th>{{ sub }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for sub in subjects %}
+                                    {% set ns = namespace(count=0) %}
+                                    {% for row in analysis %}
+                                        {% if row.subject == sub or row.subject == sub.replace(' (SST)', '') %}
+                                            {% set ns.count = (row.d1 | int) + (row.d2 | int) + (row.c3 | int) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td style="font-weight: bold; background: #e8f8f5;">{{ ns.count }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- TABLE 2: Failures (F9s) -->
+                    <h4 style="margin: 15px 0 5px 0; color: #c0392b;">Number of Failures (F9s)</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                {% for sub in subjects %}
+                                <th>{{ sub }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for sub in subjects %}
+                                    {% set ns = namespace(f9_count=0) %}
+                                    {% for row in analysis %}
+                                        {% if row.subject == sub or row.subject == sub.replace(' (SST)', '') %}
+                                            {% set ns.f9_count = row.f9 %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <td style="font-weight: bold; color: #c0392b; background: #fadbd8;">{{ ns.f9_count }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- TABLE 3: Division Summary Roster -->
+                    <h4 style="margin: 15px 0 5px 0; color: var(--dark-header);">Division Summary Roster</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>DIV 1</th>
+                                <th>DIV 2</th>
+                                <th>DIV 3</th>
+                                <th>DIV 4</th>
+                                <th>U</th>
+                                <th>X</th>
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set div1 = namespace(c=0) %}
+                            {% set div2 = namespace(c=0) %}
+                            {% set div3 = namespace(c=0) %}
+                            {% set div4 = namespace(c=0) %}
+                            {% set divU = namespace(c=0) %}
+                            {% set divX = namespace(c=0) %}
+
+                            {% for student in student_mark_list %}
+                                {% if student.division in ['Div 1', 'DIV 1', 'I'] %}{% set div1.c = div1.c + 1 %}{% endif %}
+                                {% if student.division in ['Div 2', 'DIV 2', 'II'] %}{% set div2.c = div2.c + 1 %}{% endif %}
+                                {% if student.division in ['Div 3', 'DIV 3', 'III'] %}{% set div3.c = div3.c + 1 %}{% endif %}
+                                {% if student.division in ['Div 4', 'DIV 4', 'IV'] %}{% set div4.c = div4.c + 1 %}{% endif %}
+                                {% if student.division in ['Div U', 'DIV U', 'U'] %}{% set divU.c = divU.c + 1 %}{% endif %}
+                                {% if student.division in ['Div X', 'DIV X', 'X'] %}{% set divX.c = divX.c + 1 %}{% endif %}
+                            {% endfor %}
+
+                            <tr>
+                                <td style="font-weight: bold; color: #27ae60;">{{ div1.c }}</td>
+                                <td style="font-weight: bold; color: #2980b9;">{{ div2.c }}</td>
+                                <td style="font-weight: bold; color: #f39c12;">{{ div3.c }}</td>
+                                <td style="font-weight: bold;">{{ div4.c }}</td>
+                                <td style="font-weight: bold; color: #c0392b;">{{ divU.c }}</td>
+                                <td style="font-weight: bold; color: #7f8c8d;">{{ divX.c }}</td>
+                                <td style="font-weight: bold; background: #ebf5fb;">{{ student_mark_list | length }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div> 
+    </div>
+
+    <footer style="margin-top: 50px; text-align: center; font-family: Arial, sans-serif; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 1000px; margin-left: auto; margin-right: auto;">
+        <div style="background: #87CEEB; padding: 25px 15px; border-bottom: 5px solid #1B365D; width: 100%; box-sizing: border-box;">
+            <strong style="color: #1B365D; font-size: 20px; letter-spacing: 1px; text-shadow: 1px 1px 0px rgba(255,255,255,0.6);">
+                KIHANI PRIMARY SCHOOL
+            </strong><br>
+            <span style="color: #1B365D; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 5px;">
+                📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+            </span>
+        </div>
+
+        <div style="background: #FF9F43; padding: 15px; color: white; font-weight: bold; font-size: 14px; letter-spacing: 0.5px; width: 100%; box-sizing: border-box;">
+            📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+        </div>
+
+        <div style="background: #1B365D; padding: 8px; color: #87CEEB; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; width: 100%; box-sizing: border-box;">
+            School Management Information System
+        </div>
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("sidebar-overlay");
+            sidebar.classList.toggle("active");
+            overlay.classList.toggle("active");
+        }
+    </script>
+
+</body>
+</html>

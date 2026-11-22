@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Learner - Kihani PS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 0; margin: 0; background: #f4f6f9; }
+        
+        .page-wrapper { display: flex; justify-content: center; padding: 20px; }
+
+        /* Landscape Orientation Container */
+        .form-container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            max-width: 900px; 
+            width: 100%;
+            box-shadow: 0px 4px 15px rgba(0,0,0,0.1); 
+        }
+
+        .landscape-layout {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap; /* Allows stacking on small mobile screens */
+        }
+
+        /* Left Side: Photo Management */
+        .photo-section {
+            flex: 1;
+            min-width: 250px;
+            text-align: center;
+            border-right: 1px solid #eee;
+            padding-right: 20px;
+        }
+
+        .preview-box {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 3px solid #1B365D;
+            margin-bottom: 10px;
+            background: #f0f0f0;
+        }
+
+        /* Right Side: Form Data */
+        .details-section {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .full-width { grid-column: span 2; }
+
+        label { font-weight: bold; font-size: 13px; color: #1B365D; display: block; margin-bottom: 5px; }
+        input, select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        button:hover { background: #219150; }
+
+        .cam-btn {
+            background: #3498db;
+            padding: 8px 12px;
+            font-size: 13px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        .cam-btn:hover { background: #2980b9; }
+
+        .snap-btn {
+            background: #e67e22;
+            padding: 8px 12px;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .snap-btn:hover { background: #d35400; }
+        
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* ==================== SIDEBAR & TOP BAR STYLES ==================== */
+        .menu-toggle-btn {
+            font-size: 15px;
+            background-color: #FF9F43;
+            color: #1B365D;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: opacity 0.2s;
+        }
+
+        .menu-toggle-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 270px;
+            position: fixed;
+            top: 0;
+            left: -270px;
+            background-color: #1B365D;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            padding-top: 20px;
+            z-index: 10000;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-title {
+            color: #87CEEB;
+            padding: 0 20px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .sidebar a {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #ffffff;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #87CEEB;
+            color: #1B365D;
+            font-weight: bold;
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #87CEEB;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <!-- 2. Dark Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 3. Top Header Bar -->
+    <div style="background-color: #1B365D; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">
+                &#9776; Menu
+            </button>
+            <img src="{{ url_for('static', filename='photos/badge.jpg') }}" style="height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </div>
+    </div>
+
+<div class="page-wrapper">
+    <div class="form-container">
+        <h2 style="text-align: center; color: #1B365D; margin-top: 0;">Update Student Profile</h2>
+        
+        <form action="{{ url_for('edit_student', id=student['id']) }}" method="POST" enctype="multipart/form-data">
+            <div class="landscape-layout">
+                
+                <div class="photo-section">
+                    <label>Student Image</label>
+                    
+                    <!-- Live Camera Feed (Hidden by default) -->
+                    <video id="camera-feed" class="preview-box" style="display:none;" autoplay playsinline></video>
+                    
+                    <!-- Image Preview -->
+                    <img id="image-preview" class="preview-box" 
+                         src="{{ url_for('static', filename='photos/' + student['photo']) if student['photo'] else 'https://via.placeholder.com/200?text=No+Photo' }}" 
+                         alt="Preview">
+                    
+                    <!-- Hidden Canvas to process snapshot -->
+                    <canvas id="photo-canvas" style="display:none;"></canvas>
+
+                    <!-- Camera Trigger Buttons -->
+                    <button type="button" id="start-camera-btn" class="cam-btn" onclick="startCamera()">📷 Open Web Camera</button>
+                    <button type="button" id="capture-btn" class="snap-btn" style="display:none;" onclick="takeSnapshot()">📸 Snap Photo</button>
+
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 11px; color: #7f8c8d;">Or choose existing file:</label>
+                        <input type="file" name="photo" id="photo-input" accept="image/*" style="border: none; font-size: 12px;">
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <div class="form-grid">
+                        <div class="full-width">
+                            <label>Full Name</label>
+                            <input type="text" name="name" value="{{ student['name'] }}" required>
+                        </div>
+
+                        <div>
+                            <label>Admission No</label>
+                            <input type="text" name="admission_no" value="{{ student['admission_no'] }}" readonly style="background: #f9f9f9;">
+                        </div>
+
+                        <div>
+                            <label>Class</label>
+                            <select name="class_name" required>
+                                {% set current_cls = student['class_name'] | upper | replace('.', '') | replace(' ', '') %}
+				<option value="Baby" {% if current_cls in ['Baby', 'Baby'] %}selected{% endif %}>Baby</option>
+                                <option value="Middle" {% if current_cls in ['Middle', 'Middle'] %}selected{% endif %}>Middle</option>
+                                <option value="Top" {% if current_cls == 'Top' %}selected{% endif %}>Top</option>
+                                <option value="P1" {% if current_cls in ['P1', 'P.1'] %}selected{% endif %}>P1</option>
+                                <option value="P2" {% if current_cls in ['P2', 'P.2'] %}selected{% endif %}>P2</option>
+                                <option value="P3" {% if current_cls in ['P3', 'P.3'] %}selected{% endif %}>P3</option>
+                                <option value="P4" {% if current_cls in ['P4', 'P.4'] %}selected{% endif %}>P4</option>
+                                <option value="P5" {% if current_cls in ['P5', 'P.5'] %}selected{% endif %}>P5</option>
+                                <option value="P6" {% if current_cls in ['P6', 'P.6'] %}selected{% endif %}>P6</option>
+                                <option value="P7" {% if current_cls in ['P7', 'P.7'] %}selected{% endif %}>P7</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label>Gender</label>
+                            <select name="gender">
+                                <option value="Male" {% if student['gender'] | lower in ['male', 'boy', 'm'] %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if student['gender'] | lower in ['female', 'girl', 'f'] %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label>Date of Birth</label>
+                            <input type="date" name="dob" value="{{ student['dob'] }}">
+                        </div>
+
+                        <div class="full-width">
+                            <label>Parent/Guardian Name</label>
+                            <input type="text" name="parent" value="{{ student['parent'] }}">
+                        </div>
+                    </div>
+
+                    <button type="submit">Save Profile Changes</button>
+                    <a href="{{ url_for('students') }}" class="back-btn">← Cancel and Return</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer style="margin-top: 30px; text-align: center; font-family: Arial, sans-serif; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 900px; width: 100%; margin-left: auto; margin-right: auto;">
+    <div style="background: #87CEEB; padding: 15px; border-bottom: 5px solid #1B365D;">
+        <strong style="color: #1B365D; font-size: 16px;">KIHANI PRIMARY SCHOOL</strong><br>
+        <span style="color: #1B365D; font-size: 12px;">P.O. Box 229, Ibanda, Uganda</span>
+    </div>
+</footer>
+
+<script>
+    const photoInput = document.getElementById('photo-input');
+    const imagePreview = document.getElementById('image-preview');
+    const video = document.getElementById('camera-feed');
+    const canvas = document.getElementById('photo-canvas');
+    const startCamBtn = document.getElementById('start-camera-btn');
+    const captureBtn = document.getElementById('capture-btn');
+    let mediaStream = null;
+
+    // File input preview
+    photoInput.addEventListener('change', function() {
+        stopCamera();
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Start Live Web Camera
+    async function startCamera() {
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            video.srcObject = mediaStream;
+            video.style.display = 'block';
+            imagePreview.style.display = 'none';
+            startCamBtn.style.display = 'none';
+            captureBtn.style.display = 'inline-block';
+        } catch (err) {
+            alert("Unable to access camera: " + err.message);
+        }
+    }
+
+    // Take Snapshot and convert to File
+    function takeSnapshot() {
+        canvas.width = 300;
+        canvas.height = 300;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(function(blob) {
+            const capturedFile = new File([blob], "camera_snapshot.jpg", { type: "image/jpeg" });
+            
+            // Attach snapshot directly to the form input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(capturedFile);
+            photoInput.files = dataTransfer.files;
+
+            // Show captured image preview and close camera
+            imagePreview.src = canvas.toDataURL('image/jpeg');
+            stopCamera();
+        }, 'image/jpeg', 0.95);
+    }
+
+    // Stop Camera Stream
+    function stopCamera() {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+        video.style.display = 'none';
+        imagePreview.style.display = 'block';
+        startCamBtn.style.display = 'inline-block';
+        captureBtn.style.display = 'none';
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    }
+</script>
+
+</body>
+</html>

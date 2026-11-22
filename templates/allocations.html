@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subject & Responsibility Allocations - Kihani PS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 0; margin: 0; }
+        .box { max-width: 95%; margin: 20px auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h2 { color: #1B365D; border-bottom: 2px solid #87CEEB; padding-bottom: 10px; margin-top: 30px; }
+        h2:first-of-type { margin-top: 0; }
+        
+        .form-group { margin-bottom: 20px; }
+        label.main-label { display: block; font-weight: bold; margin-bottom: 8px; color: #1B365D; font-size: 15px; }
+        select.teacher-select { width: 100%; max-width: 400px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: white; font-size: 14px; font-weight: bold; }
+        
+        /* Grid Layout for Ticking Options */
+        .selection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .panel { background: #f8f9fa; border: 1px solid #dcdde1; border-radius: 6px; padding: 15px; }
+        .panel-title { font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; }
+        
+        .tick-item { display: flex; align-items: center; margin-bottom: 8px; cursor: pointer; font-size: 13px; color: #333; }
+        .tick-item input[type="checkbox"] { margin-right: 8px; transform: scale(1.1); cursor: pointer; }
+        .tick-item:hover { color: #1B365D; font-weight: bold; }
+
+        .btn { background: #1B365D; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn:hover { background: #2c3e50; }
+        .btn-del { color: #e74c3c; text-decoration: none; font-weight: bold; font-size: 16px; margin-left: 5px; display: inline-block; line-height: 1; vertical-align: middle; }
+        .btn-del:hover { color: #c0392b; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; vertical-align: top; }
+        th { background: #87CEEB; color: #1B365D; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; display: inline-block; margin: 2px; }
+        .badge-subject { background: #2980b9; }
+        .badge-admin { background: #8e44ad; }
+        
+        .allocation-item { display: inline-flex; align-items: center; background: #f1f2f6; border: 1px solid #dcdde1; padding: 3px 8px; border-radius: 5px; margin: 3px; }
+
+        /* ==================== SIDEBAR & TOP BAR STYLES ==================== */
+        .menu-toggle-btn {
+            font-size: 15px;
+            background-color: #FF9F43;
+            color: #1B365D;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: opacity 0.2s;
+        }
+
+        .menu-toggle-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 270px;
+            position: fixed;
+            top: 0;
+            left: -270px;
+            background-color: #1B365D;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            padding-top: 20px;
+            z-index: 10000;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-title {
+            color: #87CEEB;
+            padding: 0 20px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .sidebar a {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #ffffff;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #87CEEB;
+            color: #1B365D;
+            font-weight: bold;
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #87CEEB;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <!-- 2. Dark Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 3. Top Header Bar -->
+    <div style="background-color: #1B365D; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">
+                &#9776; Menu
+            </button>
+            <img src="{{ url_for('static', filename='photos/badge.jpg') }}" style="height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </div>
+    </div>
+
+<div class="box">
+    <h2>Mass Allocation Entry Desk</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label class="main-label">1. Select Staff Member:</label>
+            <select name="teacher_id" class="teacher-select" required>
+                <option value="">-- Choose Staff Member --</option>
+                {% for t in teachers %}
+                    <option value="{{ t.id }}">{{ t.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <label class="main-label">2. Tick All Applicable Assignments & Duties:</label>
+        <div class="selection-grid">
+            
+            <!-- School-Wide Administrative Roles Box -->
+            <div class="panel">
+                <div class="panel-title">Institutional Roles</div>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Headteacher"> Headteacher</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Deputy Headteacher"> Deputy Headteacher</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Director of Studies (DOS)"> Director of Studies (DOS)</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Senior Woman Teacher"> Senior Woman Teacher</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Senior Man Teacher"> Senior Man Teacher</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="General Duties Boarding Teacher"> Boarding Master/Mistress</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Furniture & Asset In-Charge"> Furniture & Asset In-Charge</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Sports & Co-curricular Coordinator"> Sports Coordinator</label>
+                <label class="tick-item"><input type="checkbox" name="roles" value="Class Teacher">Class Teacher</label>
+            </div>
+
+            <!-- Target Classes Box -->
+            <div class="panel">
+                <div class="panel-title">Target Classes</div>
+                <label class="tick-item"><input type="checkbox" name="classes" value="Baby"> Baby (Baby)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="Middle"> Middle (Middle)</label>
+	        <label class="tick-item"><input type="checkbox" name="classes" value="Top"> Top (Top)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="P1"> Primary One (P1)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="P2"> Primary Two (P2)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="P3"> Primary Three (P3)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="P4"> Primary Four (P4)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="P5"> Primary Five (P5)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="P6"> Primary Six (P6)</label>
+                <label class="tick-item"><input type="checkbox" name="classes" value="P7"> Primary Seven (P7)</label>
+            </div>
+
+            <!-- Subjects Box -->
+            <div class="panel">
+                <div class="panel-title">Assigned Subjects</div>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Language"> Language</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Numbers"> Numbers</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Writing"> Writing</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Social"> Social</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Health"> Health</label>
+	        <label class="tick-item"><input type="checkbox" name="subjects" value="Mathematics"> Mathematics</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="English"> English</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Social Studies (SST)"> Social Studies (SST)</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Integrated Science"> Integrated Science</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Religious Education"> Religious Education</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Local Language"> Local Language</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Literacy I"> Literacy I</label>
+                <label class="tick-item"><input type="checkbox" name="subjects" value="Literacy II"> Literacy II</label>
+            </div>
+            
+        </div>
+
+        <button type="submit" class="btn">🚀 Save All Allocated Duties</button>
+    </form>
+
+    <h2>Active Master Duty Allocation Roster</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Teacher Name</th>
+                <th style="width: 75%;">Allocated Duties & Responsibilities</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set tracked_teachers = [] %}
+            {% for main_alloc in allocations %}
+                {% if main_alloc.name not in tracked_teachers %}
+                    {% if tracked_teachers.append(main_alloc.name) %}{% endif %}
+                    <tr>
+                        <td style="font-weight: bold; color: #1B365D; font-size: 15px; padding-top: 16px;">
+                            👤 {{ main_alloc.name }}
+                        </td>
+                        <td>
+                            {% for sub_alloc in allocations if sub_alloc.name == main_alloc.name %}
+                                <div class="allocation-item">
+                                    {% if sub_alloc.class_name != "N/A" and sub_alloc.subject %}
+                                        <span class="badge badge-subject">
+                                            📚 {{ sub_alloc.class_name }} - {{ sub_alloc.subject }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-admin">
+                                            💼 {{ sub_alloc.role_type }}
+                                        </span>
+                                    {% endif %}
+                                    <a href="{{ url_for('delete_allocation', id=sub_alloc.id) }}" class="btn-del" onclick="return confirm('Cancel this duty assignment?');" title="Remove Responsibility">×</a>
+                                </div>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% else %}
+            <tr>
+                <td colspan="2" style="text-align: center; color: #888; padding: 25px;">No allocations found in database.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<footer style="margin-top: 50px; text-align: center; font-family: Arial, sans-serif; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 750px; margin-left: auto; margin-right: auto;">
+    <div style="background: #87CEEB; padding: 20px 15px; border-bottom: 5px solid #1B365D;">
+        <strong style="color: #1B365D; font-size: 18px; letter-spacing: 0.5px;">KIHANI PRIMARY SCHOOL</strong><br>
+        <span style="color: #1B365D; font-weight: bold; font-size: 13px; display: inline-block; margin-top: 5px;">
+            📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+        </span>
+    </div>
+    <div style="background: #FF9F43; padding: 12px; color: white; font-weight: bold; font-size: 13px;">
+        📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+    </div>
+</footer>
+
+<!-- Sidebar Toggle Script -->
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+</script>
+
+</body>
+</html>
+

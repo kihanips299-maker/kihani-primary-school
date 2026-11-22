@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic History - {{ student['name'] }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .student-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #2f3640;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .student-photo {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2f3640;
+            margin-right: 20px;
+        }
+        .student-info h2 {
+            margin: 0 0 5px 0;
+            color: #2f3640;
+        }
+        .student-info p {
+            margin: 3px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .year-section {
+            margin-bottom: 30px;
+        }
+        .year-title {
+            background-color: #2f3640;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 16px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .term-title {
+            font-weight: bold;
+            color: #1b365d;
+            margin: 15px 0 8px 0;
+            border-left: 4px solid #1b365d;
+            padding-left: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f0f3f6;
+            color: #333;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .btn-print {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        @media print {
+            .btn-print { display: none; }
+            body { background-color: #fff; margin: 0; }
+            .container { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="#" onclick="window.print();" class="btn-print">🖨️ Print Academic Record</a>
+
+    <!-- Student Details Summary -->
+    <div class="student-header">
+        {% if student['photo'] %}
+            <img src="{{ url_for('static', filename='photos/' + student['photo']) }}" class="student-photo" alt="Student Photo">
+        {% else %}
+            <div class="student-photo" style="display:flex; align-items:center; justify-content:center; background:#eee; font-weight:bold;">NO PHOTO</div>
+        {% endif %}
+        <div class="student-info">
+            <h2>{{ student['name'] }}</h2>
+            <p><strong>Admission No:</strong> {{ student['admission_no'] }} | <strong>Class:</strong> {{ student['class_name'] }}</p>
+            <p><strong>Gender:</strong> {{ student['gender'] }} | <strong>Parent/Guardian:</strong> {{ student['parent'] }} ({{ student['parent_contact'] or student['phone'] }})</p>
+        </div>
+    </div>
+
+    <h3>Cumulative Performance History</h3>
+
+    {% if history %}
+        {% for year, terms in history.items() %}
+            <div class="year-section">
+                <div class="year-title">Academic Year: {{ year }}</div>
+
+                {% for term_name, records in terms.items() %}
+                    <div class="term-title">{{ term_name }} Records</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="text-left">Subject</th>
+                                <th>Exam Type</th>
+                                <th>Score Obtained</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in records %}
+                                <tr>
+                                    <td class="text-left">{{ r['subject'] }}</td>
+                                    <td>{{ r['exam_type'] }}</td>
+                                    <td><strong>{{ r['score'] }}</strong></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p style="text-align: center; color: #777; margin-top: 30px;">No historical academic records found for this student.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

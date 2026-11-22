@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Settings - Kihani PS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; min-height: 100vh; color: #2f3542; }
+        
+        .main-container { padding: 20px 10px; }
+        
+        .settings-container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
+        .settings-grid { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+        .settings-card { flex: 1; min-width: 270px; background: #fafbfc; border: 1px solid #e1e8ed; padding: 20px; border-radius: 8px; }
+        h3 { color: #1B365D; border-bottom: 2px solid #FF9F43; padding-bottom: 8px; margin-top: 0; }
+        label { font-weight: bold; font-size: 13px; color: #2c3e50; display: block; margin: 10px 0 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .btn-save { background: #1B365D; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .btn-save:hover { background: #142846; }
+        .alert-success { background: #d4edda; color: #155724; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .alert-error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+
+        /* ==================== SIDEBAR & TOP BAR STYLES ==================== */
+        .menu-toggle-btn {
+            font-size: 15px;
+            background-color: #FF9F43;
+            color: #1B365D;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: opacity 0.2s;
+        }
+
+        .menu-toggle-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 270px;
+            position: fixed;
+            top: 0;
+            left: -270px;
+            background-color: #1B365D;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            padding-top: 20px;
+            z-index: 10000;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+            text-align: left;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-title {
+            color: #87CEEB;
+            padding: 0 20px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .sidebar a {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #ffffff;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #87CEEB;
+            color: #1B365D;
+            font-weight: bold;
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #87CEEB;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Web Print Engine Controls */
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar no-print">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <!-- 2. Dark Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay no-print" onclick="toggleSidebar()"></div>
+
+    <!-- 3. Top Header Bar -->
+    <div class="no-print" style="background-color: #1B365D; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">
+                &#9776; Menu
+            </button>
+            <img src="{{ url_for('static', filename='badge.png') }}" style="height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="settings-container">
+            <h2 style="color: #1B365D; margin-top: 0;">⚙️ School System Control Panel</h2>
+            <p style="color: #666;">Manage active academic term parameters, credentials, and system options.</p>
+
+            {% if success_msg %}
+                <div class="alert-success">✅ {{ success_msg }}</div>
+            {% endif %}
+
+            {% if error_msg %}
+                <div class="alert-error">❌ {{ error_msg }}</div>
+            {% endif %}
+
+            <div class="settings-grid">
+                
+                <!-- PANEL 1: Academic Calendar & Term Settings -->
+                <div class="settings-card">
+                    <h3>📅 Academic Term Settings</h3>
+                    <form method="POST" action="{{ url_for('settings') }}">
+                        <label>📌 Current Term</label>
+                        <select name="current_term" required>
+                            <option value="Term 1" {% if settings and settings['current_term'] in ['Term 1', 'Term I', 'TERM 1'] %}selected{% endif %}>Term 1</option>
+                            <option value="Term 2" {% if settings and settings['current_term'] in ['Term 2', 'Term II', 'TERM 2'] %}selected{% endif %}>Term 2</option>
+                            <option value="Term 3" {% if settings and settings['current_term'] in ['Term 3', 'Term III', 'TERM 3'] %}selected{% endif %}>Term 3</option>
+                        </select>
+
+                        <label>🗓️ Current Academic Year</label>
+                        <input type="number" name="current_year" value="{{ settings['current_year'] if settings else 2026 }}" placeholder="e.g. 2026" required>
+
+                        <button type="submit" class="btn-save" style="background: #27ae60;">Save Academic Settings</button>
+                    </form>
+                </div>
+
+                <!-- PANEL 2: Security & Password -->
+                <div class="settings-card">
+                    <h3>🔐 Security Settings</h3>
+                    <form method="POST" action="{{ url_for('settings') }}">
+                        <label>Current Admin Password</label>
+                        <input type="password" name="current_password" placeholder="••••••••">
+                        
+                        <label>New Secure Password</label>
+                        <input type="password" name="new_password" placeholder="Minimum 6 characters">
+                        
+                        <label>Confirm New Password</label>
+                        <input type="password" name="confirm_password" placeholder="Re-type new password">
+                        
+                        <button type="submit" class="btn-save" style="background: #d9534f;">Update Security Key</button>
+                    </form>
+                </div>
+
+            </div>
+            
+            <a href="{{ url_for('home') }}" style="display: block; text-align: center; margin-top: 25px; color: #3498db; text-decoration: none; font-size: 14px; font-weight: bold;">← Back to Main Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="no-print" style="margin-top: 40px; margin-bottom: 30px; text-align: center; font-family: Arial, sans-serif; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 950px; margin-left: auto; margin-right: auto;">
+        <div style="background: #87CEEB; padding: 25px 15px; border-bottom: 5px solid #1B365D;">
+            <strong style="color: #1B365D; font-size: 20px; letter-spacing: 1px; text-shadow: 1px 1px 0px rgba(255,255,255,0.6);">
+                KIHANI PRIMARY SCHOOL
+            </strong><br>
+            <span style="color: #1B365D; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 5px;">
+                📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+            </span>
+        </div>
+
+        <div style="background: #FF9F43; padding: 15px; color: white; font-weight: bold; font-size: 14px; letter-spacing: 0.5px;">
+            📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+        </div>
+
+        <div style="background: #1B365D; padding: 8px; color: #87CEEB; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+            School Management Information System
+        </div>
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("sidebar-overlay");
+            
+            sidebar.classList.toggle("active");
+            overlay.classList.toggle("active");
+        }
+    </script>
+
+</body>
+</html>

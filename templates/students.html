@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Students - Kihani PS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f4f6f9; 
+            padding: 0; 
+            margin: 0; 
+            min-height: 100vh; 
+            color: #2f3542; 
+        }
+        
+        .main-container { 
+            padding: 15px 15px; 
+        }
+        
+        /* Enlarge screen layout area to fit more cards per row */
+        .container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: flex-start; 
+            gap: 10px; 
+            width: 100%;
+        }
+        
+        .card { 
+            background: white; 
+            border-radius: 8px; 
+            width: 135px; /* Fits 6 to 8 cards per row depending on screen width */
+            padding: 10px 8px; 
+            text-align: center; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .photo-box { 
+            width: 60px; 
+            height: 60px; 
+            background: #ddd; 
+            margin: 0 auto 6px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden;
+            border: 2px solid #1B365D;
+        }
+        .photo-box img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        h3 { 
+            font-size: 13px; 
+            margin: 5px 0 3px; 
+            color: #333; 
+            line-height: 1.2; 
+            word-break: break-word; 
+        }
+        p { 
+            font-size: 11px; 
+            color: #666; 
+            margin: 0 0 6px; 
+        }
+        
+        .btn { 
+            display: inline-block; 
+            padding: 4px 8px; 
+            font-size: 11px; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            color: white; 
+            margin: 1px; 
+            font-weight: bold;
+        }
+        .btn-edit { background: #3498db; }
+        .btn-edit:hover { background: #2980b9; }
+        .btn-delete { background: #e74c3c; }
+        .btn-delete:hover { background: #c0392b; }
+
+        /* Class Filter Navigation Styles */
+        .class-filter-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 100%;
+        }
+        .filter-btn {
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .filter-btn.active {
+            background: #1B365D;
+            color: white;
+        }
+        .class-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* Sidebar & Navigation Styles */
+        .menu-toggle-btn {
+            font-size: 15px; 
+            background-color: #FF9F43; 
+            color: #1B365D; 
+            border: none;
+            padding: 8px 16px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            display: inline-flex;
+            align-items: center; 
+            gap: 8px; 
+            font-weight: bold; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .sidebar {
+            height: 100%; 
+            width: 270px; 
+            position: fixed; 
+            top: 0; 
+            left: -270px;
+            background-color: #1B365D; 
+            overflow-y: auto; 
+            transition: left 0.3s ease;
+            padding-top: 20px; 
+            z-index: 10000; 
+            box-shadow: 2px 0 12px rgba(0,0,0,0.4); 
+            text-align: left;
+        }
+        .sidebar.active { left: 0; }
+        .sidebar-title { 
+            color: #87CEEB; 
+            padding: 0 20px; 
+            font-size: 18px; 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 10px; 
+        }
+        .sidebar a { 
+            padding: 12px 20px; 
+            text-decoration: none; 
+            font-size: 14px; 
+            color: #ffffff; 
+            display: block; 
+        }
+        .sidebar a:hover { 
+            background-color: #87CEEB; 
+            color: #1B365D; 
+            font-weight: bold; 
+        }
+        .sidebar .close-btn { 
+            position: absolute; 
+            top: 10px; 
+            right: 15px; 
+            font-size: 28px; 
+            color: #87CEEB; 
+            cursor: pointer; 
+        }
+        .sidebar-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 9999; 
+        }
+        .sidebar-overlay.active { display: block; }
+
+        @media print { .no-print { display: none !important; } }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar no-print">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <!-- 2. Dark Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay no-print" onclick="toggleSidebar()"></div>
+
+    <!-- 3. Top Header Bar -->
+    <div class="no-print" style="background-color: #1B365D; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">&#9776; Menu</button>
+            <img src="{{ url_for('static', filename='badge.png') }}" style="height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h2 style="text-align:center; color: #1B365D; margin-top: 0;">👥 Enrolled Students Directory</h2>
+        <p style="text-align:center; margin-bottom: 20px;"><a href="{{ url_for('home') }}" style="color: #3498db; text-decoration: none; font-weight: bold;">← Back to Main Dashboard</a></p>
+
+        <!-- Search Block -->
+        <div style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); max-width: 100%; margin-left: auto; margin-right: auto;">
+            <form method="GET" action="{{ url_for('students') }}" style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" name="search" id="searchInput" value="{{ search_query if search_query else '' }}" 
+                       placeholder="🔍 Type student name or admission number to search..." 
+                       style="flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px;">
+                
+                <button type="submit" 
+                        style="background: #1B365D; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold;">
+                    Search
+                </button>
+                
+                {% if search_query %}
+                <a href="{{ url_for('students') }}" 
+                   style="background: #95a5a6; color: white; text-decoration: none; padding: 10px 15px; border-radius: 5px; font-size: 14px; font-weight: bold; text-align: center; display: inline-block;">
+                    Clear
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Class Selection Tabs -->
+        <div class="class-filter-box">
+            <button class="filter-btn active" data-class="ALL" onclick="filterClass('ALL')">Show All Classes</button>
+            <button class="filter-btn" data-class="Baby" onclick="filterClass('Baby')">Baby</button>
+            <button class="filter-btn" data-class="Middle" onclick="filterClass('Middle')">Middle</button>
+            <button class="filter-btn" data-class="Top" onclick="filterClass('Top')">Top</button>
+            <button class="filter-btn" data-class="P1" onclick="filterClass('P1')">P1</button>
+            <button class="filter-btn" data-class="P2" onclick="filterClass('P2')">P2</button>
+            <button class="filter-btn" data-class="P3" onclick="filterClass('P3')">P3</button>
+            <button class="filter-btn" data-class="P4" onclick="filterClass('P4')">P4</button>
+            <button class="filter-btn" data-class="P5" onclick="filterClass('P5')">P5</button>
+            <button class="filter-btn" data-class="P6" onclick="filterClass('P6')">P6</button>
+            <button class="filter-btn" data-class="P7" onclick="filterClass('P7')">P7</button>
+        </div>
+
+        <!-- Main Display Container -->
+        <div style="width: 100%;">
+            {% set classes = ['Baby', 'Middle', 'Top', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7'] %}
+            
+            {% for current_class in classes %}
+                <!-- Class Specific Section Wrapper -->
+                <div class="class-group" id="group-{{ current_class }}">
+                    
+                    <!-- Class Header with Delete Action Block -->
+                    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin: 15px 0 10px; border-bottom: 2px solid #87CEEB; padding-bottom: 5px;">
+                        <h3 style="color: #1B365D; font-size: 18px; margin: 0; font-weight: bold;">{{ current_class }} Learner List</h3>
+                        
+                        <form action="{{ url_for('delete_class', class_name=current_class) }}" method="POST" 
+                              onsubmit="return confirm('⚠️ CRITICAL WARNING!\n\nAre you sure you want to delete the ENTIRE {{ current_class }} class?');">
+                            <button type="submit" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                                🗑️ Delete Class
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="container">
+                        {% set class_has_students = namespace(found=false) %}
+                        
+                        {% for student in students %}
+                            {% set st_class = student[3] | string | upper | replace('.', '') | replace(' ', '') %}
+                            {% set cur_class_norm = current_class | upper | replace('.', '') | replace(' ', '') %}
+                            
+                            {% if st_class == cur_class_norm or (cur_class_norm in ['BABY', 'MIDDLE', 'TOP'] and st_class == 'NURSERY') %}
+                                {% set class_has_students.found = true %}
+                                <a href="{{ url_for('student_profile', admission_no=student[1]) }}" style="text-decoration: none; color: inherit;">
+                                    <div class="card" title="Click to view full profile analysis!">
+                                        
+                                        <div class="photo-box">
+                                            {% if student[10] %}
+                                                <img src="{{ url_for('static', filename='photos/' + student[10]) }}" alt="Student Photo">
+                                            {% else %}
+                                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #ddd; border-radius: 50%; color: #555; font-weight: bold; font-size: 10px;">👤 Profile</div>
+                                            {% endif %}
+                                        </div>
+
+                                        <h3>{{ student[4] if student[4] else "Unnamed Student" }}</h3>
+                                        
+                                        <p style="color: #2980b9; font-weight: bold;">Code: {{ student[1] }}</p>
+                                        <p>Class: {{ student[3] if student[3] else "No Class" }}</p>
+
+                                        <div style="margin-top: 8px; display: flex; gap: 4px; justify-content: center;" onclick="event.stopPropagation();">
+                                            <a href="{{ url_for('edit_student', id=student[0]) }}?redirect_class={{ current_class }}" class="btn btn-edit">Edit</a>
+                                            <a href="{{ url_for('delete_student', id=student[0]) }}" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this profile?');">Delete</a>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if not class_has_students.found %}
+                            <p style="text-align: left; color: #95a5a6; font-size: 12px; margin: 5px 0; width: 100%;">No learners registered under {{ current_class }} yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- JavaScript to filter classes & preserve selected class active tab -->
+    <script>
+    function filterClass(className, saveState = true) {
+        let buttons = document.getElementsByClassName('filter-btn');
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove('active');
+            if (buttons[i].getAttribute('data-class') === className) {
+                buttons[i].classList.add('active');
+            }
+        }
+
+        let groups = document.getElementsByClassName('class-group');
+        for (let i = 0; i < groups.length; i++) {
+            if (className === 'ALL') {
+                groups[i].style.display = 'flex';
+            } else {
+                if (groups[i].id === 'group-' + className) {
+                    groups[i].style.display = 'flex';
+                } else {
+                    groups[i].style.display = 'none';
+                }
+            }
+        }
+
+        if (saveState) {
+            localStorage.setItem('active_student_class', className);
+        }
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    }
+
+    // Automatically load saved active class or show ALL classes if performing a search
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+        const urlClass = urlParams.get('class') || urlParams.get('redirect_class');
+        const savedClass = localStorage.getItem('active_student_class');
+
+        if (searchQuery && searchQuery.trim() !== '') {
+            // When performing a search, show ALL classes so matching students aren't hidden by tab filters
+            filterClass('ALL', false);
+        } else if (urlClass) {
+            filterClass(urlClass, true);
+        } else if (savedClass) {
+            filterClass(savedClass, false);
+        } else {
+            filterClass('ALL', false);
+        }
+    });
+    </script>
+
+    <!-- Footer -->
+    <footer class="no-print" style="margin-top: 50px; text-align: center; font-family: Arial, sans-serif; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 100%; margin-bottom: 30px;">
+        <div style="background: #87CEEB; padding: 20px 15px; border-bottom: 5px solid #1B365D;">
+            <strong style="color: #1B365D; font-size: 18px; letter-spacing: 1px;">
+                KIHANI PRIMARY SCHOOL
+            </strong><br>
+            <span style="color: #1B365D; font-weight: bold; font-size: 13px; display: inline-block; margin-top: 5px;">
+                📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+            </span>
+        </div>
+        <div style="background: #FF9F43; padding: 12px; color: white; font-weight: bold; font-size: 13px;">
+            📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+        </div>
+        <div style="background: #1B365D; padding: 8px; color: #87CEEB; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+            School Management Information System
+        </div>
+    </footer>
+
+</body>
+</html>

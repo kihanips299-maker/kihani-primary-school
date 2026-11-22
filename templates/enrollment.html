@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enrollment - Kihani PS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; padding: 0; margin: 0; }
+        
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #1B365D;
+            text-align: center;
+            margin-top: 0;
+            border-bottom: 2px solid #87CEEB;
+            padding-bottom: 10px;
+        }
+
+        form p {
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #1B365D;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            background: #1B365D;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
+        button[type="submit"]:hover {
+            background: #2c3e50;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* Error and Alert Box Styles */
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .input-error-msg {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+            font-weight: normal;
+        }
+
+        /* ==================== SIDEBAR & TOP BAR STYLES ==================== */
+        .menu-toggle-btn {
+            font-size: 15px;
+            background-color: #FF9F43;
+            color: #1B365D;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: opacity 0.2s;
+        }
+
+        .menu-toggle-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 270px;
+            position: fixed;
+            top: 0;
+            left: -270px;
+            background-color: #1B365D;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            padding-top: 20px;
+            z-index: 10000;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-title {
+            color: #87CEEB;
+            padding: 0 20px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .sidebar a {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #ffffff;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #87CEEB;
+            color: #1B365D;
+            font-weight: bold;
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #87CEEB;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <!-- 2. Dark Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 3. Top Header Bar -->
+    <div style="background-color: #1B365D; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">
+                &#9776; Menu
+            </button>
+            <img src="{{ url_for('static', filename='photos/badge.jpg') }}" style="height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </div>
+    </div>
+
+<div class="container">
+    <h1>Enroll a Student</h1>
+
+    <!-- Display error alerts if passed from Flask or flashed -->
+    {% if error %}
+        <div class="alert-error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-error">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" enctype="multipart/form-data" id="enrollmentForm">
+        
+        <p>Admission No: 
+            <input type="text" name="admission_no" id="admission_no" required>
+            <span id="admission_error" class="input-error-msg">⚠️ This admission number is already assigned to another student!</span>
+        </p>
+
+        <p>Section:
+            <select name="section">
+                <option>Nursery</option>
+                <option>P1</option>
+                <option>P2</option>
+                <option>P3</option>
+                <option>P4</option>
+                <option>P5</option>
+                <option>P6</option>
+                <option>P7</option>
+            </select>
+        </p>
+
+        <p>Class Name:
+            <input type="text" name="class_name" required>
+        </p>
+
+        <p>Name:
+            <input type="text" name="name" required>
+        </p>
+
+        <p>Gender:
+            <select name="gender">
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+        </p>
+
+        <p>Date of Birth:
+            <input type="date" name="dob" required>
+        </p>
+
+        <p>Parent/Guardian:
+            <input type="text" name="parent">
+        </p>
+
+        <p>Phone:
+            <input type="text" name="phone">
+        </p>
+
+        <p>Village:
+            <input type="text" name="village">
+        </p>
+
+        <p>Photo:
+            <input type="file" name="photo">
+        </p>
+
+        <button type="submit" id="submitBtn">Enroll Student</button>
+
+    </form>
+
+    <a href="{{ url_for('home') }}" class="back-link">← Return to Dashboard</a>
+</div>
+
+<footer style="margin-top: 50px; text-align: center; font-family: Arial, sans-serif; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 900px; margin-left: auto; margin-right: auto;">
+    <div style="background: #87CEEB; padding: 25px 15px; border-bottom: 5px solid #1B365D;">
+        <strong style="color: #1B365D; font-size: 20px; letter-spacing: 1px; text-shadow: 1px 1px 0px rgba(255,255,255,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </strong><br>
+        <span style="color: #1B365D; font-weight: bold; font-size: 14px; display: inline-block; margin-top: 5px;">
+            📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+        </span>
+    </div>
+
+    <div style="background: #FF9F43; padding: 15px; color: white; font-weight: bold; font-size: 14px; letter-spacing: 0.5px;">
+        📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+    </div>
+
+    <div style="background: #1B365D; padding: 8px; color: #87CEEB; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+        School Management Information System
+    </div>
+</footer>
+
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  
+  sidebar.classList.toggle("active");
+  overlay.classList.toggle("active");
+}
+
+// Client-side check for duplicate admission numbers
+document.getElementById('admission_no').addEventListener('blur', function() {
+    const admissionNo = this.value.trim();
+    const errorSpan = document.getElementById('admission_error');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (admissionNo.length === 0) {
+        errorSpan.style.display = 'none';
+        this.style.borderColor = '#ccc';
+        submitBtn.disabled = false;
+        return;
+    }
+
+    // Call backend API endpoint to verify availability
+    fetch(`/check_admission_no?admission_no=${encodeURIComponent(admissionNo)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                errorSpan.style.display = 'block';
+                this.style.borderColor = '#e74c3c';
+                submitBtn.disabled = true;
+            } else {
+                errorSpan.style.display = 'none';
+                this.style.borderColor = '#2ecc71';
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error('Error validating admission number:', err);
+        });
+});
+</script>
+
+</body>
+</html>
+

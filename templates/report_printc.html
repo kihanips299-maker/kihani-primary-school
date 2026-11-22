@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Report Card - {{ student.name }}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #fafafa; 
+            margin: 0; 
+            padding: 0; 
+            color: #2f3542; 
+        }
+        
+        .main-container { padding: 0; }
+
+        /* Single Page Outer Frame */
+        .report-card { 
+            width: 100%;
+            max-width: 800px;
+            margin: 15px auto 30px auto;
+            background: white; 
+            padding: 14px 18px; 
+            box-sizing: border-box;
+            border: 1px solid #1B365D;
+            border-radius: 2px;
+            display: block;
+        }
+
+        /* Top Layout Header */
+        .header-layout-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+        .header-layout-table td { padding: 0; border: none; vertical-align: middle; }
+        
+        .school-title { font-size: 26px; font-weight: bold; color: #1B365D; text-align: center; margin: 0; letter-spacing: 0.8px; }
+        .school-motto { font-size: 13px; font-weight: bold; color: #FF9F43; text-align: center; font-style: italic; letter-spacing: 1.5px; margin-top: 3px; }
+        .school-details { font-size: 11px; text-align: center; color: #4b5563; margin-top: 4px; font-weight: bold; line-height: 1.4; }
+
+        .report-banner {
+            text-align: center; font-size: 13px; font-weight: bold; letter-spacing: 1.2px;
+            background: #1B365D !important; color: white !important; padding: 6px; margin: 8px 0; text-transform: uppercase;
+            border-radius: 2px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+
+        /* Pupil Info Box */
+        .info-table { 
+            width: 100%; border-collapse: collapse; margin-bottom: 12px; 
+            background-color: #f8fafc !important; border: 1px solid #1B365D;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .info-table td { padding: 6px 12px; border: none; font-size: 11.5px; vertical-align: top; line-height: 1.45; }
+        .info-label { font-weight: bold; color: #1B365D; }
+
+        /* Term Performance Section Tables */
+        .exam-block { page-break-inside: avoid; margin-bottom: 12px; }
+        
+        .marks-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 11px;
+            border: 1px solid #333333; 
+        }
+        .marks-table th { 
+            padding: 6px 6px; 
+            text-align: center; 
+            border: 1px solid #333333;
+        }
+        .marks-table td { 
+            padding: 5.5px 6px; 
+            text-align: center; 
+            border: 1px solid #333333;
+        }
+        .text-left { text-align: left !important; }
+        .comment-cell { text-align: left !important; font-style: italic; color: #2c3e50; font-size: 10.5px; }
+
+        /* Section Background Colors */
+        .bot-section .term-heading {
+            font-size: 11px; font-weight: bold; color: #1B365D; background-color: #e0f2fe !important;
+            padding: 4px 8px; margin-bottom: 0; border: 1px solid #333333; border-bottom: none; text-transform: uppercase;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .bot-section .marks-table th { background: #0284c7 !important; color: white !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .bot-section .total-row td { background: #f0f9ff !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        .mot-section .term-heading {
+            font-size: 11px; font-weight: bold; color: #9a3412; background-color: #ffedd5 !important;
+            padding: 4px 8px; margin-bottom: 0; border: 1px solid #333333; border-bottom: none; text-transform: uppercase;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .mot-section .marks-table th { background: #ea580c !important; color: white !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .mot-section .total-row td { background: #fff7ed !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        .eot-section .term-heading {
+            font-size: 11px; font-weight: bold; color: #14532d; background-color: #dcfce7 !important;
+            padding: 4px 8px; margin-bottom: 0; border: 1px solid #333333; border-bottom: none; text-transform: uppercase;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .eot-section .marks-table th { background: #16a34a !important; color: white !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .eot-section .total-row td { background: #f0fdf4 !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        .remarks-section { 
+            margin-top: 12px; font-size: 11.5px; line-height: 1.5; page-break-inside: avoid;
+            background-color: #fafafa !important; padding: 12px 14px; border: 1px solid #333333; border-radius: 2px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .remark-line { margin-bottom: 6px; border-bottom: 1px dotted #94a3b8; padding-bottom: 4px; }
+        
+        .signature-table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+        .signature-table td { border: none; font-size: 11.5px; padding-top: 6px; }
+
+        .system-print-footer {
+            margin-top: 14px;
+            border-top: 1px dotted #94a3b8;
+            padding-top: 5px;
+            font-size: 8.5px;
+            color: #475569;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-toggle-btn {
+            font-size: 14px; background-color: #FF9F43; color: #1B365D; border: none;
+            padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;
+        }
+
+        .sidebar {
+            height: 100%; width: 270px; position: fixed; top: 0; left: -270px;
+            background-color: #1B365D; overflow-y: auto; transition: left 0.3s ease;
+            padding-top: 20px; z-index: 10000; text-align: left;
+        }
+        .sidebar.active { left: 0; }
+        .sidebar-title { color: #87CEEB; padding: 0 20px; font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+        .sidebar a { padding: 10px 20px; text-decoration: none; font-size: 13px; color: #ffffff; display: block; }
+        .sidebar a:hover { background-color: #87CEEB; color: #1B365D; font-weight: bold; }
+        .sidebar .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; color: #87CEEB; cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; }
+        .sidebar-overlay.active { display: block; }
+
+  @media print {
+    @page { 
+        size: A4 portrait; 
+        margin: 0;
+    }
+    
+    html, body { 
+        width: 208mm;
+        height: 297mm;
+        background: white !important; 
+        color: black !important; 
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important; 
+        print-color-adjust: exact !important; 
+    }
+    
+    .report-card { 
+        width: 99% !important;
+        height: 272 !important;
+        margin-top: 5mm !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding: 5mm 7mm !important; 
+        border: 1.5px solid #000000 !important; /* Outer card border */
+        box-sizing: border-box !important;
+        display: block !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    
+    .no-print { display: none !important; }
+    .main-container { padding: 0; width: 100%; }
+
+    /* Header & Banner Optimizations */
+    .school-title { font-size: 26px !important; line-height: 1.1 !important; }
+    .school-motto { font-size: 13px !important; margin-top: 2px !important; }
+    .school-details { font-size: 11.5px !important; line-height: 1.4 !important; margin-top: 3px !important; }
+    
+    .report-banner { 
+        font-size: 11px !important; 
+        padding: 4px !important; 
+        margin: 2px 0 3px 0 !important; 
+    }
+    
+    /* Pupil Info Table */
+    .info-table {
+        width: 100% !important;
+        border: 1px solid #1B365D !important;
+        border-collapse: collapse !important;
+        margin-bottom: 4px !important;
+    }
+    .info-table td { 
+        font-size: 12px !important; 
+        padding: 6px 10px !important; 
+        vertical-align: top;
+        line-height: 1.3;
+        border: 1px solid #cbd5e1 !important; /* Inner cell borders */
+    }
+
+    /* Section Headers (BOT/MOT/EOT Titles) */
+    .section-header {
+        font-size: 11px !important;
+        padding: 4px 8px !important;
+        margin-top: 4px !important;
+        margin-bottom: 2px !important;
+    }
+    /* Upper Primary (P4-P7) Marks Tables (4 Subjects) */
+    .marks-table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        border: 1px solid #000000 !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .marks-table td, .marks-table th { 
+        padding: 6px 8px !important; 
+        font-size: 11.5px !important;  
+        line-height: 1.0 !important;
+        border: 1px solid #333333 !important; /* Sharp grid borders */
+    }
+
+    /* Remarks & Summary Section */
+    .remarks-section { 
+        width: 100% !important;
+        padding: 5px 8px !important; 
+        font-size: 11px !important; 
+        margin-top: 4px !important; 
+        margin-bottom: 2px !important;
+        border: 1px solid #333333 !important;
+        box-sizing: border-box !important;
+    }
+    .remark-line {
+        border-bottom: 1px dotted #666666 !important;
+        padding-bottom: 2px !important;
+    }
+
+    /* LOWER PRIMARY SPECIFIC (P1-P3) OVERRIDES */
+    .report-card.lower-primary {
+        padding: 3mm 5mm !important;
+    }
+
+    .report-card.lower-primary .school-title { 
+        font-size: 20px !important; 
+    }
+    .report-card.lower-primary .school-details { 
+        font-size: 9.5px !important; 
+        line-height: 1.2 !important; 
+    }
+
+    .report-card.lower-primary .info-table td { 
+        padding: 8px 10px !important; 
+        font-size: 10px !important; 
+    }
+
+    .report-card.lower-primary .info-table {
+        margin-bottom: 16px !important;
+    }
+
+    .report-card.lower-primary .term-heading {
+        padding: 2px 5px !important;
+        font-size: 9.5px !important;
+    }
+
+    .report-card.lower-primary .marks-table td, 
+    .report-card.lower-primary .marks-table th { 
+        padding: 5px 6px !important;
+        font-size: 10.5px !important;
+        line-height: 1.25 !important;
+    }
+
+    .report-card.lower-primary .remarks-section {
+        padding: 3px 5px !important;
+        font-size: 9.5px !important;
+        margin-top: 2px !important;
+    }
+
+    .report-card.lower-primary .signature-table {
+        margin-top: 4px !important;
+    }
+  }
+ </style>
+</head>
+<body>
+    <!-- Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar no-print">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <div id="sidebar-overlay" class="sidebar-overlay no-print" onclick="toggleSidebar()"></div>
+
+    <div class="no-print" style="background-color: #1B365D; padding: 8px 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">&#9776; Menu</button>
+            <img src="{{ url_for('static', filename='badge.png') }}" style="height: 30px; border-radius: 3px;">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 16px;">KIHANI PRIMARY SCHOOL</div>
+    </div>
+
+    <div class="no-print" style="max-width: 800px; margin: 0 auto 10px auto; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; box-sizing: border-box;">
+        <a href="{{ url_for('report_cards_dashboard') }}" style="text-decoration: none; color: #1B365D; font-weight: bold; font-size: 13px;">⬅️ Back to Dashboard</a>
+        <button onclick="window.print()" style="background: #27ae60; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">
+            🖨️ Print Report Card
+        </button>
+    </div>
+
+    <div class="main-container">
+        <div class="report-card {% if student.class_name in ['P1', 'P2', 'P3', 'P.1', 'P.2', 'P.3', 'p1', 'p2', 'p3'] %}lower-primary{% endif %}">
+            
+            <!-- School Header -->
+            <table class="header-layout-table">
+                <tr>
+                    <td style="width: 14%; text-align: left;">
+                        <img src="{{ url_for('static', filename='badge.png') }}" alt="Badge" style="max-height: 75px; width: auto; display: block;">
+                    </td>
+                    
+                    <td style="width: 72%; text-align: center;">
+                        <div class="school-title">KIHANI PRIMARY SCHOOL</div>
+                        <div class="school-motto">EDUCATION IS WEALTH</div>
+                        <div class="school-details">
+                            📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda<br>
+                            📞 0741659188 / 0775786494 &nbsp;|&nbsp; ✉️ kihanips299@gmail.com
+                        </div>
+                    </td>
+                    
+                    <td style="width: 14%; text-align: right;">
+                        <div style="width: 85px; height: 100px; border: 1px solid #1B365D; margin-left: auto; display: flex; align-items: center; justify-content: center; background: #fafafa; border-radius: 2px; overflow: hidden;">
+                            {% if student.photo %}
+                                {% if 'static/' in student.photo or 'photos/' in student.photo %}
+                                    <img src="{{ url_for('static', filename=student.photo.split('static/')[-1]) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='photos/' + student.photo) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% endif %}
+                            {% elif student.image_path %}
+                                {% if 'static/' in student.image_path or 'photos/' in student.image_path %}
+                                    <img src="{{ url_for('static', filename=student.image_path.split('static/')[-1]) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='photos/' + student.image_path) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% endif %}
+                            {% else %}
+                                <span style="font-size: 8px; color: #777; text-align: center; font-weight: bold;">NO PHOTO</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Dynamic Report Banner -->
+            <div class="report-banner">STUDENT REPORT CARD - {{ current_term | upper }} {{ current_year }}</div>
+
+            <!-- Dynamic Pupil Details -->
+            <table class="info-table">
+                <tr>
+                    <td style="width: 50%;">
+                        <span class="info-label">PUPIL'S NAME:</span> <strong>{{ student.name }}</strong><br>
+                        <span class="info-label">CLASS:</span> {{ student.class_name }}<br>
+                        <span class="info-label">ADMISSION NO:</span> {{ student.admission_no }}
+                    </td>
+                    <td style="width: 50%; text-align: right;">
+                        <span class="info-label">GENDER:</span> {{ student.gender if student.gender else 'N/A' }}<br>
+                        <span class="info-label">YEAR:</span> {{ current_year }}<br>
+                        <span class="info-label">TERM:</span> {{ current_term | upper }}
+                    </td>
+                </tr>
+            </table>
+
+            <!-- BOT, MOT, EOT Performance Blocks -->
+            {% for exam_set in ['BOT', 'MOT', 'EOT'] %}
+            {% set term_data = report_cards[exam_set] if (report_cards is defined and report_cards[exam_set] is defined) else none %}
+            <div class="exam-block {% if exam_set == 'BOT' %}bot-section{% elif exam_set == 'MOT' %}mot-section{% else %}eot-section{% endif %}">
+                <div class="term-heading">
+                    {% if exam_set == 'BOT' %}📘 BEGINNING OF TERM (BOT) EXAMINATIONS{% elif exam_set == 'MOT' %}📙 MID-TERM (MOT) EXAMINATIONS{% else %}📗 END OF TERM (EOT) EXAMINATIONS{% endif %}
+                </div>
+                
+                <table class="marks-table">
+                    <thead>
+                        <tr>
+                            <th class="text-left" style="width: 22%;">SUBJECTS</th>
+                            <th style="width: 10%;">Full Marks</th>
+                            <th style="width: 12%;">Mark Obtained</th>
+                            <th style="width: 8%;">Agg</th>
+                            <th class="text-left" style="width: 40%;">SUBJECT TEACHER'S REMARKS</th>
+                            <th style="width: 8%;">INITIAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in subjects %}
+                            {% set sub_data = term_data['marks'][sub] if (term_data is not none and term_data['marks'] is defined and term_data['marks'][sub] is defined) else none %}
+                            {% set score_display = sub_data['score'] if sub_data is not none else '-' %}
+                            {% set agg_display = sub_data['agg'] if sub_data is not none else '-' %}
+                        <tr>
+                            <td class="text-left" style="font-weight: bold;">{{ sub }}</td>
+                            <td>100</td>
+                            <td>{{ score_display }}</td>
+                            <td>{{ agg_display }}</td>
+                            <td class="comment-cell">
+                                {% if score_display != '-' and score_display != '' %}
+                                    {% set score_num = score_display|float %}
+                                    {% if score_num >= 90 %}Excellent Performance!! keep it up 👍
+                                    {% elif score_num >= 75 %}Very good work. You could do better.
+                                    {% elif score_num >= 55 %}A substantial performance, aim higher.
+                                    {% elif score_num >= 40 %}Apply yourself to your work. More effort is required.
+                                    {% else %}A very poor score. Pay careful attention to your work.{% endif %}
+                                {% else %}-{% endif %}
+                            </td>
+                            <td style="font-weight: bold;">
+                                {% if score_display != '-' and score_display != '' %}
+                                    {{ initials[sub] if (initials is defined and initials[sub] is defined) else 'TR' }}
+                                {% else %}-{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="total-row">
+                            <td class="text-left">TOTAL MARKS</td>
+                            <td>{{ subjects|length * 100 }}</td>
+                            <td>{{ term_data['total_score'] if term_data is not none else '-' }}</td>
+                            <td>{{ term_data['total_aggregates'] if term_data is not none else '-' }}</td>
+                            <td colspan="2" class="text-left" style="padding-left: 10px;">
+                                DIVISION: {{ term_data['division'] if term_data is not none else '-' }} &nbsp;&nbsp;|&nbsp;&nbsp; POSITION: {{ term_data['position'] if term_data is not none else '-' }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+
+            <!-- Dynamic Remarks & Signatures -->
+            <div class="remarks-section">
+                <div class="remark-line">
+                    <strong>Class Teacher's Comment:</strong> 
+                    <span>{{ class_teacher_comment if class_teacher_comment }}</span>
+                </div>
+                <div class="remark-line">
+                    <strong>Head Teacher's Comment:</strong> 
+                    <span>{{ head_teacher_comment if head_teacher_comment }}</span>
+                </div>
+                
+                <div style="margin-top: 6px; font-weight: bold; color: #1B365D;">
+                    📅 Next Term Begins On: <span style="text-decoration: underline; color: #2f3542;">Monday, September 14, 2026</span>
+                </div>
+
+                <table class="signature-table">
+                    <tr>
+                        <td style="width: 50%;">
+                            ---------------------------------------<br>
+                            <strong>Class Teacher Signature</strong>
+                        </td>
+                        <td style="width: 50%; text-align: right;">
+                            ---------------------------------------<br>
+                            <strong>Head Teacher Stamp & Signature</strong>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="system-print-footer">
+                    <span>Printed from Kihani Primary School System</span>
+                    <span><strong>Date & Time:</strong> {{ generated_at if generated_at is defined else '' }}</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="no-print" style="margin-top: 30px; margin-bottom: 20px; text-align: center; font-family: Arial, sans-serif; border-radius: 8px; overflow: hidden; max-width: 800px; margin-left: auto; margin-right: auto;">
+        <div style="background: #87CEEB; padding: 15px 10px; border-bottom: 3px solid #1B365D;">
+            <strong style="color: #1B365D; font-size: 16px;">KIHANI PRIMARY SCHOOL</strong><br>
+            <span style="color: #1B365D; font-weight: bold; font-size: 12px; display: inline-block; margin-top: 3px;">
+                📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+            </span>
+        </div>
+        <div style="background: #FF9F43; padding: 10px; color: white; font-weight: bold; font-size: 12px;">
+            📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+        </div>
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("sidebar-overlay");
+            sidebar.classList.toggle("active");
+            overlay.classList.toggle("active");
+        }
+    </script>
+
+</body>
+</html>

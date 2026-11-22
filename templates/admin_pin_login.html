@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin Panel Security - Kihani PS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 350px; border-top: 5px solid #1B365D; text-align: center; }
+        h3 { color: #1B365D; margin-bottom: 20px; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; text-align: center; }
+        button { background: #1B365D; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; }
+        button:hover { background: #2c4d75; }
+        .back-link { display: block; margin-top: 15px; color: #666; text-decoration: none; font-size: 14px; }
+        .back-link:hover { color: #1B365D; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>🔐 Admin Panel Locked</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Please enter the administrator password to proceed.</p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="color: #c0392b; font-size: 13px; margin-bottom: 15px; font-weight: bold;">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <input type="password" name="admin_pin" placeholder="Enter Password" required autofocus>
+            <button type="submit">Unlock Dashboard</button>
+        </form>
+        <a href="{{ url_for('home') }}" class="back-link">← Return to Home</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Card - {{ student.name }}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #fafafa; 
+            margin: 0; 
+            padding: 0; 
+            color: #2f3542; 
+        }
+        
+        .main-container { padding: 0; }
+
+        /* Full Single-Page Frame */
+        .report-card { 
+            width: 100%;
+            max-width: 100%;
+            margin: auto;
+            background: white; 
+            padding: 8px 12px; /* Tight padding to fit 1 page */
+            box-sizing: border-box;
+            border: 1px solid #1B365D;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 98vh; /* Lock height to full viewport/page height */
+            page-break-after: always;
+            page-break-inside: avoid;
+        }
+
+        /* Top Header */
+        .header-layout-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+        .header-layout-table td { padding: 0; border: none; vertical-align: middle; }
+        
+        .school-title { font-size: 20px; font-weight: bold; color: #1B365D; text-align: center; margin: 0; line-height: 1.1; }
+        .school-motto { font-size: 11px; font-weight: bold; color: #FF9F43; text-align: center; font-style: italic; letter-spacing: 1px; margin-top: 1px; }
+        .school-details { font-size: 9.5px; text-align: center; color: #57606f; margin-top: 2px; font-weight: bold; line-height: 1.2; }
+
+        .report-banner {
+            text-align: center; font-size: 11px; font-weight: bold; letter-spacing: 1px;
+            background: #1B365D !important; color: white !important; padding: 4px; margin: 4px 0; text-transform: uppercase;
+            border-radius: 2px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+
+        /* Pupil Info Box */
+        .info-table { 
+            width: 100%; border-collapse: collapse; margin-bottom: 6px; 
+            background-color: #f8fafc !important; border: 1px solid #1B365D;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .info-table td { padding: 4px 8px; border: none; font-size: 10.5px; vertical-align: top; line-height: 1.3; }
+        .info-label { font-weight: bold; color: #1B365D; }
+
+        /* Term Performance Section Tables */
+        .exam-block { page-break-inside: avoid; margin-bottom: 6px; }
+        
+        .marks-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 9.5px;
+            border: 1px solid #333333; 
+        }
+        .marks-table th, .marks-table td { 
+            padding: 3px 5px; /* Compact cell padding */
+            text-align: center; 
+            border: 1px solid #333333;
+        }
+        .text-left { text-align: left !important; }
+        .comment-cell { text-align: left !important; font-style: italic; color: #2c3e50; font-size: 9px; }
+
+        /* Term Header Backgrounds */
+        .bot-section .term-heading {
+            font-size: 10px; font-weight: bold; color: #1B365D; background-color: #e0f2fe !important;
+            padding: 3px 6px; margin-bottom: 0; border: 1px solid #333333; border-bottom: none; text-transform: uppercase;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .bot-section .marks-table th { background: #0284c7 !important; color: white !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .bot-section .total-row td { background: #f0f9ff !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        .mot-section .term-heading {
+            font-size: 10px; font-weight: bold; color: #9a3412; background-color: #ffedd5 !important;
+            padding: 3px 6px; margin-bottom: 0; border: 1px solid #333333; border-bottom: none; text-transform: uppercase;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .mot-section .marks-table th { background: #ea580c !important; color: white !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .mot-section .total-row td { background: #fff7ed !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        .eot-section .term-heading {
+            font-size: 10px; font-weight: bold; color: #14532d; background-color: #dcfce7 !important;
+            padding: 3px 6px; margin-bottom: 0; border: 1px solid #333333; border-bottom: none; text-transform: uppercase;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .eot-section .marks-table th { background: #16a34a !important; color: white !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .eot-section .total-row td { background: #f0fdf4 !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        /* Remarks Box */
+        .remarks-section { 
+            margin-top: 4px; font-size: 9.5px; line-height: 1.3; page-break-inside: avoid;
+            background-color: #fafafa !important; padding: 6px 10px; border: 1px solid #333333; border-radius: 2px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+        .remark-line { margin-bottom: 4px; border-bottom: 1px dotted #94a3b8; padding-bottom: 2px; }
+        
+        .signature-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .signature-table td { border: none; font-size: 9.5px; padding-top: 2px; }
+
+        /* Navigation Drawer Controls */
+        .menu-toggle-btn {
+            font-size: 13px; background-color: #FF9F43; color: #1B365D; border: none;
+            padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;
+        }
+
+        .sidebar {
+            height: 100%; width: 250px; position: fixed; top: 0; left: -250px;
+            background-color: #1B365D; overflow-y: auto; transition: left 0.3s ease;
+            padding-top: 15px; z-index: 10000; text-align: left;
+        }
+        .sidebar.active { left: 0; }
+        .sidebar-title { color: #87CEEB; padding: 0 15px; font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .sidebar a { padding: 8px 15px; text-decoration: none; font-size: 12px; color: #ffffff; display: block; }
+        .sidebar a:hover { background-color: #87CEEB; color: #1B365D; font-weight: bold; }
+        .sidebar .close-btn { position: absolute; top: 8px; right: 12px; font-size: 22px; color: #87CEEB; cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; }
+        .sidebar-overlay.active { display: block; }
+
+        /* Strict Print Rules for Single-Page Output */
+        @media print {
+            @page { 
+                size: A4 portrait; 
+                margin: 4mm 4mm; /* Very small outer margins */
+            }
+            html, body { 
+                width: 100%;
+                height: 100%;
+                background: white; 
+                color: black; 
+                overflow: hidden;
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+            .report-card { 
+                width: 100% !important;
+                height: 98vh !important; /* Force fit to 1 sheet */
+                padding: 4px 6px !important; 
+                border: 1px solid #333333; 
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+            }
+            .no-print { display: none !important; }
+            .main-container { padding: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Drawer -->
+    <div id="sidebar" class="sidebar no-print">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <div id="sidebar-overlay" class="sidebar-overlay no-print" onclick="toggleSidebar()"></div>
+
+    <!-- Screen Navigation Bar -->
+    <div class="no-print" style="background-color: #1B365D; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">&#9776; Menu</button>
+            <img src="{{ url_for('static', filename='badge.png') }}" style="height: 25px; border-radius: 2px;">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 14px;">KIHANI PRIMARY SCHOOL</div>
+    </div>
+
+    <div class="no-print" style="width: 100%; margin: 0 auto 4px auto; display: flex; justify-content: space-between; align-items: center; padding: 0 8px; box-sizing: border-box;">
+        <a href="{{ url_for('report_cards_dashboard') }}" style="text-decoration: none; color: #1B365D; font-weight: bold; font-size: 12px;">⬅️ Back to Dashboard</a>
+        <button onclick="window.print()" style="background: #27ae60; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">
+            🖨️ Print Report Card
+        </button>
+    </div>
+
+    <div class="main-container">
+        {% set student_list = students_data if students_data is defined else [student_data if student_data is defined else {'student': student, 'report_cards': report_cards}] %}
+        
+        {% for item in student_list %}
+        {% set curr_student = item.student if item.student is defined else student %}
+        {% set curr_reports = item.report_cards if item.report_cards is defined else report_cards %}
+        
+        <div class="report-card">
+            <div>
+                <!-- Header -->
+                <table class="header-layout-table">
+                    <tr>
+                        <td style="width: 12%; text-align: left;">
+                            <img src="{{ url_for('static', filename='badge.png') }}" alt="Badge" style="max-height: 55px; width: auto; display: block;">
+                        </td>
+                        
+                        <td style="width: 76%; text-align: center;">
+                            <div class="school-title">KIHANI PRIMARY SCHOOL</div>
+                            <div class="school-motto">EDUCATION IS WEALTH</div>
+                            <div class="school-details">
+                                📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda<br>
+                                📞 0741659188 / 0775786494 &nbsp;|&nbsp; ✉️ kihanips299@gmail.com
+                            </div>
+                        </td>
+                        
+                        <td style="width: 12%; text-align: right;">
+                            <div style="width: 65px; height: 75px; border: 1px solid #1B365D; margin-left: auto; display: flex; align-items: center; justify-content: center; background: #fafafa; border-radius: 2px; overflow: hidden;">
+                                {% if curr_student.photo %}
+                                    {% if 'static/' in curr_student.photo or 'photos/' in curr_student.photo %}
+                                        <img src="{{ url_for('static', filename=curr_student.photo.split('static/')[-1]) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='photos/' + curr_student.photo) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% endif %}
+                                {% elif curr_student.image_path %}
+                                    {% if 'static/' in curr_student.image_path or 'photos/' in curr_student.image_path %}
+                                        <img src="{{ url_for('static', filename=curr_student.image_path.split('static/')[-1]) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='photos/' + curr_student.image_path) }}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% endif %}
+                                {% else %}
+                                    <span style="font-size: 7px; color: #777; text-align: center; font-weight: bold;">NO PHOTO</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="report-banner">Student Termly Report Card</div>
+
+                <!-- Learner Info -->
+                <table class="info-table">
+                    <tr>
+                        <td style="width: 50%;">
+                            <span class="info-label">PUPIL'S NAME:</span> <strong>{{ curr_student.name }}</strong><br>
+                            <span class="info-label">CLASS:</span> {{ curr_student.class_name if curr_student.class_name else (curr_student.class if curr_student.class else selected_class) }}<br>
+                            <span class="info-label">ADMISSION NO:</span> {{ curr_student.admission_no }}
+                        </td>
+                        <td style="width: 50%; text-align: right;">
+                            <span class="info-label">GENDER:</span> {{ curr_student.gender if curr_student.gender else 'N/A' }}<br>
+                            <span class="info-label">YEAR:</span> 2026<br>
+                            <span class="info-label">TERM:</span> TERM 1
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- BOT, MOT, EOT Blocks -->
+                {% for exam_set in ['BOT', 'MOT', 'EOT'] %}
+                {% set term_data = curr_reports[exam_set] if (curr_reports is defined and exam_set in curr_reports) else None %}
+                
+                <div class="exam-block {% if exam_set == 'BOT' %}bot-section{% elif exam_set == 'MOT' %}mot-section{% else %}eot-section{% endif %}">
+                    <div class="term-heading">
+                        {% if exam_set == 'BOT' %}📘 BEGINNING OF TERM (BOT) EXAMINATIONS{% elif exam_set == 'MOT' %}📙 MID-TERM (MOT) EXAMINATIONS{% else %}📗 END OF TERM (EOT) EXAMINATIONS{% endif %}
+                    </div>
+                    
+                    <table class="marks-table">
+                        <thead>
+                            <tr>
+                                <th class="text-left" style="width: 22%;">SUBJECTS</th>
+                                <th style="width: 10%;">Full Marks</th>
+                                <th style="width: 12%;">Mark Obtained</th>
+                                <th style="width: 8%;">Agg</th>
+                                <th class="text-left" style="width: 40%;">SUBJECT TEACHER'S REMARKS</th>
+                                <th style="width: 8%;">INITIAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in subjects %}
+                            {% set score_data = term_data['marks'][sub] if (term_data is not none and 'marks' in term_data and sub in term_data['marks']) else {'score': '-', 'agg': '-'} %}
+                            {% set score_display = score_data['score'] %}
+                            <tr>
+                                <td class="text-left" style="font-weight: bold;">{{ sub }}</td>
+                                <td>100</td>
+                                <td>{{ score_display }}</td>
+                                <td>{{ score_data['agg'] }}</td>
+                                <td class="comment-cell">
+                                    {% if score_display != '-' and score_display != '' and score_display is not none %}
+                                        {% set s = score_display|float %}
+                                        {% if s >= 90 %}Excellent Performance!! keep it up 👍
+                                        {% elif s >= 75 %}Very good work. You could do better.
+                                        {% elif s >= 55 %}A substantial performance, aim higher.
+                                        {% elif s >= 40 %}Apply yourself to your work. More effort is required.
+                                        {% else %}A very poor score. Pay careful attention to your work.{% endif %}
+                                    {% else %}-{% endif %}
+                                </td>
+                                <td style="font-weight: bold;">
+                                   {% if score_display != '-' and score_display != '' and score_display is not none %}
+                                        {{ initials[sub] if (initials is defined and sub in initials) else 'TR' }}
+                                    {% else %}-{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="total-row">
+                                <td class="text-left">TOTAL MARKS</td>
+                                <td>{{ subjects|length * 100 }}</td>
+                                <td>{{ term_data['total_score'] if (term_data is not none and term_data['total_score']) else '-' }}</td>
+                                <td>{{ term_data['total_aggregates'] if (term_data is not none and term_data['total_aggregates']) else '-' }}</td>
+                                <td colspan="2" class="text-left" style="padding-left: 8px;">
+                                    <strong>DIVISION:</strong> {{ term_data['division'] if (term_data is not none and term_data['division']) else '-' }}
+                                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                                    <strong>POSITION:</strong> {{ term_data['position'] if (term_data is not none and term_data['position']) else '-' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Footer & Signatures -->
+            <div class="remarks-section">
+                <div class="remark-line"><strong>Class Teacher's Comment:</strong> Demonstrates a focused and reliable approach to academic responsibilities this term.</div>
+                <div class="remark-line"><strong>Head Teacher's Comment:</strong> A commendable performance summary. Keep maintaining this steady standard.</div>
+                
+                <div style="margin-top: 4px; font-weight: bold; color: #1B365D;">
+                   📅 Next Term Begins On: <span style="text-decoration: underline; color: #2f3542;">Monday, September 07, 2026</span>
+                </div>
+
+                <table class="signature-table">
+                    <tr>
+                        <td style="width: 50%;">
+                            ---------------------------------------<br>
+                            <strong>Class Teacher Signature</strong>
+                        </td>
+                        <td style="width: 50%; text-align: right;">
+                            ---------------------------------------<br>
+                            <strong>Head Teacher Stamp & Signature</strong>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Web Page Footer (Hidden on Print) -->
+    <footer class="no-print" style="margin-top: 30px; margin-bottom: 20px; text-align: center; font-family: Arial, sans-serif; border-radius: 8px; overflow: hidden; width: 100%;">
+        <div style="background: #87CEEB; padding: 15px 10px; border-bottom: 3px solid #1B365D;">
+            <strong style="color: #1B365D; font-size: 16px;">KIHANI PRIMARY SCHOOL</strong><br>
+            <span style="color: #1B365D; font-weight: bold; font-size: 12px; display: inline-block; margin-top: 3px;">
+                📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+            </span>
+        </div>
+        <div style="background: #FF9F43; padding: 10px; color: white; font-weight: bold; font-size: 12px;">
+               📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+        </div>
+
+        <div style="background: #1B365D; padding: 8px; color: #87CEEB; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+            School Management Information System
+        </div>
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("sidebar-overlay");
+            
+            sidebar.classList.toggle("active");
+            overlay.classList.toggle("active");
+        }
+    </script>
+
+</body>
+</html

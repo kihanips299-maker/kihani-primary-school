@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kihani PS - Register Pupil</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 0; min-height: 100vh; }
+        .main-container { padding: 40px 20px; display: flex; justify-content: center; align-items: center; }
+        .form-container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 500px; border-top: 5px solid #1B365D; }
+        h2 { color: #1B365D; margin-bottom: 5px; }
+        p { color: #777; font-size: 14px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #444; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px; }
+        .btn-submit { background: #1B365D; color: white; border: none; padding: 12px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-submit:hover { background: #27ae60; }
+        .btn-cancel { display: block; text-align: center; color: #777; text-decoration: none; font-size: 14px; margin-top: 15px; }
+
+        /* ==================== SIDEBAR & TOP BAR STYLES ==================== */
+        .menu-toggle-btn {
+            font-size: 15px;
+            background-color: #FF9F43;
+            color: #1B365D;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: opacity 0.2s;
+        }
+
+        .menu-toggle-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 270px;
+            position: fixed;
+            top: 0;
+            left: -270px;
+            background-color: #1B365D;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            padding-top: 20px;
+            z-index: 10000;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.4);
+            text-align: left;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-title {
+            color: #87CEEB;
+            padding: 0 20px;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .sidebar a {
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #ffffff;
+            display: block;
+            transition: background 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #87CEEB;
+            color: #1B365D;
+            font-weight: bold;
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #87CEEB;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Sliding Sidebar Drawer -->
+    <div id="sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="close-btn" onclick="toggleSidebar()">&times;</a>
+        <h3 class="sidebar-title">Kihani School Menu</h3>
+        
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        <a href="{{ url_for('enrollment') }}">📥 Enrollment</a>
+        <a href="{{ url_for('mass_enrollment') }}">📦 Mass Enrollment</a>
+        <a href="{{ url_for('students') }}">👥 All Students</a>
+        <a href="{{ url_for('manage_teachers') }}">👨‍🏫 Manage Teachers</a>
+        <a href="{{ url_for('manage_allocations') }}">📋 Manage Allocations</a>
+        <a href="{{ url_for('manage_marks') }}">📝 Enter Student Marks</a>
+        <a href="{{ url_for('mass_upload_marks') }}">📤 Mass Upload Marks</a>
+        <a href="{{ url_for('report_cards_dashboard') }}">📊 Report Cards Dashboard</a>
+        <a href="{{ url_for('timetable') }}">📅 Timetable</a>
+        <a href="{{ url_for('performance') }}">📈 Learner Performance</a>
+        <a href="{{ url_for('settings') }}">⚙️ System Settings</a>
+        <a href="{{ url_for('logout') }}" style="color: #FF9F43; font-weight: bold; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">🚪 Logout</a>
+    </div>
+
+    <!-- 2. Dark Backdrop Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 3. Top Header Bar -->
+    <div style="background-color: #1B365D; padding: 12px 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle-btn" onclick="toggleSidebar()">
+                &#9776; Menu
+            </button>
+            <img src="{{ url_for('static', filename='photos/badge.jpg') }}" style="height: 38px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+        </div>
+        <div style="color: white; font-weight: bold; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">
+            KIHANI PRIMARY SCHOOL
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="form-container">
+            <h2>Register New Learner</h2>
+            <p>Enter the student details to create a new profile in the school system database.</p>
+
+            <form action="{{ url_for('register_pupil') }}" method="POST">
+                <div class="form-group">
+                    <label>ADMISSION NUMBER *</label>
+                    <input type="text" name="admission_no" placeholder="e.g. KPS/2026/001" required>
+                </div>
+
+                <div class="form-group">
+                    <label>PUPIL'S FULL NAME *</label>
+                    <input type="text" name="name" placeholder="e.g. ARINDA GERALD" required>
+                </div>
+
+                <div class="form-group">
+                    <label>CLASS LEVEL *</label>
+                    <select name="class_name" required>
+                        <option value="">Select Class...</option>
+                        <option value="Nursery">Nursery</option>
+                        <option value="P1">Primary 1 (P1)</option>
+                        <option value="P2">Primary 2 (P2)</option>
+                        <option value="P3">Primary 3 (P3)</option>
+                        <option value="P4">Primary 4 (P4)</option>
+                        <option value="P5">Primary 5 (P5)</option>
+                        <option value="P6">Primary 6 (P6)</option>
+                        <option value="P7">Primary 7 (P7)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>GENDER</label>
+                    <select name="gender">
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>PARENT / GUARDIAN TELEPHONE CONTACT</label>
+                    <input type="text" name="parent_contact" placeholder="e.g. 077XXXXXXX">
+                </div>
+
+                <button type="submit" class="btn-submit">💾 Save Pupil Record</button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn-cancel">Cancel and Return</a>
+            </form>
+        </div>
+    </div>
+
+    <footer style="margin-top: 30px; margin-bottom: 30px; text-align: center; font-family: Arial, sans-serif; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 580px; margin-left: auto; margin-right: auto;">
+        <div style="background: #87CEEB; padding: 25px 15px; border-bottom: 5px solid #1B365D;">
+            <strong style="color: #1B365D; font-size: 18px; letter-spacing: 1px; text-shadow: 1px 1px 0px rgba(255,255,255,0.6);">
+                KIHANI PRIMARY SCHOOL
+            </strong><br>
+            <span style="color: #1B365D; font-weight: bold; font-size: 13px; display: inline-block; margin-top: 5px;">
+                📍 Kitembeya Village, Kikyenkye Sub-County &nbsp;|&nbsp; 📬 P.O. Box 229, Ibanda, Uganda
+            </span>
+        </div>
+
+        <div style="background: #FF9F43; padding: 12px; color: white; font-weight: bold; font-size: 13px; letter-spacing: 0.5px;">
+            📞 <span style="color: #1B365D;">0741659188 / 0775786494</span> &nbsp;&nbsp;•&nbsp;&nbsp; ✉️ <span style="color: #1B365D;">kihanips299@gmail.com</span>
+        </div>
+
+        <div style="background: #1B365D; padding: 8px; color: #87CEEB; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+            School Management Information System
+        </div>
+    </footer>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("sidebar-overlay");
+            
+            sidebar.classList.toggle("active");
+            overlay.classList.toggle("active");
+        }
+    </script>
+
+</body>
+</html>
